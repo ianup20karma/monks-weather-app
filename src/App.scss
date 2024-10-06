@@ -5,7 +5,7 @@
     display: grid;
     grid-template-columns: 60% 40%;
     .weather-report {
-      padding: 50px;
+      padding: 3rem;
       padding-bottom: 0;
       .temp-units {
         button:not(.Mui-selected) {
@@ -13,7 +13,7 @@
         }
       }
       .temp-and-units {
-        margin-top: 100px;
+        margin-top: 2rem;
         position: relative;
         font-weight: 100;
         .icon-and-text {
@@ -119,13 +119,17 @@
     }
     .sidebar {
       padding: 50px;
-      border: 2px solid #FFF;
+      border-left: 1px solid #FFF;
       background: radial-gradient(107.32% 141.42% at 0% 0%, rgba(255, 255, 255, 0.40) 0%, rgba(255, 255, 255, 0.00) 100%);
       box-shadow: -5px -5px 250px 0px rgba(255, 255, 255, 0.02) inset;
       backdrop-filter: blur(21px);
       .location-wrapper {
         display: flex;
         justify-content: space-around;
+        .location, form {
+          flex-basis: 0;
+          flex-grow: 1;
+        }
         .location {
           display: flex;
           justify-content: space-around;
@@ -137,11 +141,17 @@
           }
           span {
             font-size: 25px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
         .search-bar {
           border-radius: 100px;
           width: 300px;
+          border: 2px solid white;
+          background-color: transparent;
+          filter: drop-shadow(-2.508px 2.262px 0.754px rgba(0, 0, 0, 0.2));
         }
       }
     }
@@ -165,6 +175,60 @@
   div {
     border-radius: 100px;
   }
+}
+
+.clock-labels,.clock-values span {
+  color: #FFF;
+  text-shadow: -1.51px 2.26px 0.75px rgba(0, 0, 0, 0.10);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 120%;
+}
+
+.clock-labels span {
+  position: absolute;
+  top: 28%;
+  left: 9%;
+}
+
+.clock-labels span:last-child {
+  left: 78%;
+}
+
+.clock-values {
+  position: absolute;
+  bottom: 37%;
+  left: 8%;
+  width: 92%;
+  span:last-child {
+    position: absolute;
+    right: 9%;
+  }
+}
+
+.clock:nth-child(odd) {
+  top: 45%;
+  width: 14rem;
+  height: 14rem;
+  left: 84%;
+  .hour_hand {
+    top: 33%;
+    left: 48.5%;
+    height: 40px;
+  }
+  .min_hand {
+    top: 22.5%;
+    height: 60px;
+  }
+  .sec_hand {
+    top: 9.5%;
+    left: 49%;
+    height: 90px;
+  }
+}
+
+.clock:first-child {
+  left: 16%;
 }
 
 .clock::after {

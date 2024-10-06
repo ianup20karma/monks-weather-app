@@ -1,7 +1,7 @@
 // Provider : https://www.weatherapi.com/
 // TO GET PAST CORS ERROR: Install this extension - https://chromewebstore.google.com/detail/allow-cors-access-control/lhobafahddgcelffkeicbaginigeejlf
 
-import { WeatherAPIResponse } from "../interfaces";
+import { Astro, WeatherAPIResponse } from "../interfaces";
 
 const WeatherAPIDetails: { baseURL: string, apiKey: string } = {
     baseURL: "https://api.weatherapi.com/v1",
@@ -38,7 +38,7 @@ function getFormattedDate(date: string) {
     const newDate = new Date(date);
     const today = newDate.toLocaleDateString('en-US', { year: "numeric", month: "short", day: "numeric" });
     const weekDay = newDate.toLocaleDateString('en-US', { weekday: "long" });
-    const time = newDate.toLocaleString('en-US', { hour: 'numeric', hour12: true });
+    const time = newDate.toLocaleString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true });
 
     return { today, weekDay, time };
 }
@@ -49,11 +49,17 @@ function getShortWeekDay(date: string) {
     return days[newDate.getDay()];
 }
 
+function getCalculatedTime(apiResponse: WeatherAPIResponse, type: keyof Astro) {
+    const date = new Date(`${apiResponse?.forecast?.forecastday[0]?.date} ${apiResponse?.forecast?.forecastday[0]?.astro?.[type]}`)
+    return date;
+}
+
 export {
     WeatherAPIDetails,
     RequestURLMapper,
     weatherAPIBaseRequestURL,
     fetchWeatherReport,
     getFormattedDate,
-    getShortWeekDay
+    getShortWeekDay,
+    getCalculatedTime
 };

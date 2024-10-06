@@ -140,3 +140,13 @@ export interface Location {
   localtime_epoch: number;
   localtime: string;
 }
+
+export interface ClockComponentProps {
+  time: Date | string;
+  setTime?: Function;
+}
+
+export interface ClockComponentPropsWithUpdateMethod {
+  time: Date | string;
+  setTime: Function;
+}

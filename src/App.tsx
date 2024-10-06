@@ -1,8 +1,7 @@
 import './App.scss'
-import Clock from './components/Clock';
 import { useEffect, useState } from 'react'
 import { WeatherAPIResponse } from './interfaces';
-import { fetchWeatherReport, getFormattedDate, getShortWeekDay } from './assets/ImprotantInfo';
+import { fetchWeatherReport, getCalculatedTime, getFormattedDate, getShortWeekDay } from './assets/ImprotantInfo';
 import TempToggle from './components/TempToggle';
 import RainSVG from './assets/Rain.svg';
 import WindDirection from './assets/wind-direction-icon.svg';
@@ -11,10 +10,12 @@ import Frame from './assets/Frame.svg';
 import Card from '@mui/joy/Card';
 import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { IconButton, InputBase, Paper } from '@mui/material';
+import { Divider, IconButton, InputBase, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
+import DynamicClock from './components/DynamicClock';
+import { StaticClock } from './components/StaticClock';
 
 function App() {
     const [localTime, setLocalTime] = useState<Date>(new Date("2024-10-05 13:10"));
@@ -24,51 +25,46 @@ function App() {
     const [today, setToday] = useState<string>("");
     const [weekDay, setWeekDay] = useState<string>("");
     const [time, setTime] = useState<string>("");
-    // const swiperRef = useRef<SwiperContainer>(null);
+    const [inputValue, setInputValue] = useState('');
+    const requestParams = { requestURL: "Forecast", location: "New Delhi", days: "15", aqi: "yes" };
 
     useEffect(() => {
       setLoading(true);
-      const requestParams = { requestURL: "Forecast", location: "New Delhi", days: "15", aqi: "yes" };
-      fetchWeatherReport(requestParams).then(res => {
-        setApiResponse(res);
-        setLocalTime(new Date(res.location.localtime));
-        const { today, weekDay, time } = getFormattedDate(res.location.localtime);
-        setToday(today);
-        setWeekDay(weekDay);
-        setTime(time);
-        // adjustSwiperArrows();
-        setLoading(!loading);
-      })
+      getWeatherInfo();
     }, [])
-
-    // const adjustSwiperArrows = () => {
-      // const swiperContainer = swiperRef.current;
-      // const params = {
-      //   navigation: true,
-      //   pagination: true,
-      //   injectStyles: [
-      //     `
-      //       .swiper-button-next,
-      //       .swiper-button-prev {
-      //         background-color: white;
-      //         padding: 8px 16px;
-      //         border-radius: 100%;
-      //         border: 2px solid black;
-      //         color: red;
-      //       }
-      //       .swiper-pagination-bullet{
-      //         width: 40px;
-      //         height: 40px;
-      //         background-color: red;
-      //       }
-      //     `,
-      //   ],
-      // };
-      // Object.assign(swiperContainer, params);
-      // (swiperContainer as any)?.initialize();
-      
-    // }
     
+    useEffect(() => {
+      console.log("🚀 ~ App ~ inputValue:", inputValue)
+    }, [inputValue]);
+
+    const getWeatherInfo = () => {
+      if (inputValue || requestParams.location) {
+        fetchWeatherReport(requestParams).then(res => {
+          setApiResponse(res);
+          setLocalTime(new Date(res.location.localtime));
+          const { today, weekDay, time } = getFormattedDate(res.location.localtime);
+          setToday(today);
+          setWeekDay(weekDay);
+          setTime(time);
+          setLoading(!loading);
+        })
+      }
+    }
+
+    const handleChange = (event: React.ChangeEvent) => {
+      setInputValue((event.target as HTMLInputElement).value);
+    };
+
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.keyCode === 13) { handleSearchIconClick(); }
+    }
+
+    const handleSearchIconClick = () => {
+      requestParams.location = inputValue;
+      getWeatherInfo();
+      setInputValue("")
+    }
+
     return (
       <div className='app-wrapper'>
         <div className='weather-report'>
@@ -116,18 +112,25 @@ function App() {
         <div className='sidebar'>
           <div className='location-wrapper'>
             <span className='location'><img src={Frame} alt="" /><span>{`${apiResponse?.location?.name}, ${apiResponse?.location?.country}`}</span></span>
-            <Paper className='search-bar' component="form" sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', minWidth: 40 }}>
-              <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Enter Location" />
-              <IconButton type="button" sx={{ p: '10px' }} aria-label="search">
-                <SearchIcon />
-              </IconButton>
+            <Paper onSubmit={(event)=> { event?.preventDefault(); handleSearchIconClick();}} className='search-bar' component="form" sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', minWidth: 40 }}>
+              <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Enter Location" value={inputValue} onChange={handleChange} onKeyDown={handleKeyPress}/>
+              <IconButton type="button" sx={{ p: '10px' }} onClick={handleSearchIconClick}><SearchIcon /></IconButton>
             </Paper>
           </div>
-          <div className="clocks">
-            <Clock updatable={false} time={new Date(`${apiResponse?.forecast?.forecastday[0]?.date} ${apiResponse?.forecast?.forecastday[0]?.astro?.sunrise}`)} />
-            <Clock updatable time={localTime} setTime={setLocalTime} />
-            <Clock updatable={false} time={new Date(`${apiResponse?.forecast?.forecastday[0]?.date} ${apiResponse?.forecast?.forecastday[0]?.astro?.sunrise}`)} />
+          <div className='clock-labels'>
+            <span className='sunrise-clock'>Sunrise</span>
+            <span className='sunset-clock'>Sunset</span>
           </div>
+          {apiResponse && apiResponse?.location && <div className="clocks">
+            <StaticClock time={getCalculatedTime(apiResponse, 'sunrise')} />
+            <DynamicClock time={localTime} setTime={setLocalTime} />
+            <StaticClock time={getCalculatedTime(apiResponse, 'sunset')} />
+          </div>}
+          <div className='clock-values'>
+            <span className='sunrise-value'>{apiResponse?.forecast?.forecastday[0]?.astro?.sunrise}</span>
+            <span className='sunset-value'>{apiResponse?.forecast?.forecastday[0]?.astro?.sunset}</span>
+          </div>
+          <Divider sx={{ marginTop: "73%", borderWidth: "1px", borderColor: "#FFFFFF", opacity: "0.5", borderRadius: "100px" }} />
         </div>
       </div>
     )
