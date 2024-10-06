@@ -1,26 +1,25 @@
 import './App.scss'
 import { useEffect, useState } from 'react'
 import { WeatherAPIResponse } from './interfaces';
-import { fetchWeatherReport, getCalculatedTime, getFormattedDate, getShortWeekDay } from './assets/ImprotantInfo';
+import { fetchWeatherReport, getCalculatedTime, getFormattedDate } from './assets/ImprotantInfo';
 import TempToggle from './components/TempToggle';
 import RainSVG from './assets/Rain.svg';
 import WindDirection from './assets/wind-direction-icon.svg';
 import Humidity from './assets/hum.svg';
 import Frame from './assets/Frame.svg';
-import Card from '@mui/joy/Card';
-import { Navigation, Pagination, Scrollbar, A11y } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
 import { Divider, IconButton, InputBase, Paper } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import DynamicClock from './components/DynamicClock';
 import { StaticClock } from './components/StaticClock';
+import ForecastToggle from './components/ForecastToggle';
+import ForecastCardsHourly from './components/ForecastCardsHourly';
+import ForecastCardsDaily from './components/ForecastCardsDaily';
 
 function App() {
     const [localTime, setLocalTime] = useState<Date>(new Date("2024-10-05 13:10"));
     const [apiResponse, setApiResponse] = useState<WeatherAPIResponse>({} as WeatherAPIResponse);
     const [tempUnit, setTempUnit] = useState<string>('Celsius');
+    const [forecastUnit, setForecastUnit] = useState<string>('DAILY');
     const [loading, setLoading] = useState<boolean>(true);
     const [today, setToday] = useState<string>("");
     const [weekDay, setWeekDay] = useState<string>("");
@@ -32,10 +31,6 @@ function App() {
       setLoading(true);
       getWeatherInfo();
     }, [])
-    
-    useEffect(() => {
-      console.log("🚀 ~ App ~ inputValue:", inputValue)
-    }, [inputValue]);
 
     const getWeatherInfo = () => {
       if (inputValue || requestParams.location) {
@@ -65,75 +60,142 @@ function App() {
       setInputValue("")
     }
 
+    const handleSearchBarSubmit = (event: any) => {
+      event?.preventDefault(); handleSearchIconClick();
+    }
+
+    const searchBarStyles = {
+      p: "2px 4px",
+      display: "flex",
+      alignItems: "center",
+      minWidth: 40,
+    }
+
+    const dividerStyles= {
+      marginTop: "73%",
+      borderWidth: "1px",
+      borderColor: "#FFFFFF",
+      opacity: "0.5",
+      borderRadius: "100px",
+    }
+
     return (
-      <div className='app-wrapper'>
-        <div className='weather-report'>
+      <div className="app-wrapper">
+        <div className="weather-report">
           <div className="temp-units">
-            <TempToggle tempUnit={tempUnit} setTempUnit={setTempUnit}/>
+            <TempToggle tempUnit={tempUnit} setTempUnit={setTempUnit} />
           </div>
           <div className="temp-and-units">
-            <div className='icon-and-text'><img src={apiResponse?.current?.condition.icon} alt="" /><span>{apiResponse?.current?.condition.text}</span></div>
-            <span className='temp'>{apiResponse?.current?.[tempUnit == "Celsius" ? "temp_c" : "temp_f" ]}</span>
-            <span className='unit'>{tempUnit == "Celsius" ? "°C" : "°F" }</span>
+            <div className="icon-and-text">
+              <img src={apiResponse?.current?.condition.icon} alt="" />
+              <span>{apiResponse?.current?.condition.text}</span>
+            </div>
+            <span className="temp">
+              {
+                apiResponse?.current?.[
+                  tempUnit == "Celsius" ? "temp_c" : "temp_f"
+                ]
+              }
+            </span>
+            <span className="unit">{tempUnit == "Celsius" ? "°C" : "°F"}</span>
           </div>
           <div className="date-and-time">
-            <div className='today'>{today}</div>
-            <div className='weekday-and-time'>
+            <div className="today">{today}</div>
+            <div className="weekday-and-time">
               {weekDay} {time}
             </div>
           </div>
-          <div className='weather-stats'>
-            <span><img src={WindDirection} /><span>Wind</span>{`${apiResponse?.current?.wind_kph} km/h`}</span>
-            <span><img src={Humidity} /><span>Humidity</span>{`${apiResponse?.current?.humidity} %`}</span>
-            <span><img src={RainSVG} /><span>Precipitation</span>{`${apiResponse?.current?.precip_mm} mm`}</span>
+          <div className="weather-stats">
+            <span>
+              <img src={WindDirection} />
+              <span>Wind</span>
+              {`${apiResponse?.current?.wind_kph} km/h`}
+            </span>
+            <span>
+              <img src={Humidity} />
+              <span>Humidity</span>
+              {`${apiResponse?.current?.humidity} %`}
+            </span>
+            <span>
+              <img src={RainSVG} />
+              <span>Precipitation</span>
+              {`${apiResponse?.current?.precip_mm} mm`}
+            </span>
           </div>
-          <div className='cards'>
-            <div className="container-box">
-              <div className="small-container">
-                <Swiper modules={[Navigation, Pagination, Scrollbar, A11y]} spaceBetween={50} slidesPerView={5} autoHeight={true}
-                  navigation={{ nextEl: ".arrow-right", prevEl: ".arrow-left" }} pagination={{ clickable: true, dynamicBullets: true }}>
-                  {apiResponse?.forecast?.forecastday?.map(dayWeather => {
-                    return <SwiperSlide key={dayWeather.date_epoch}>
-                      <Card className="weather-card">
-                        <span>{tempUnit == "Celsius" ? `${dayWeather.day.avgtemp_c}°C` : `${dayWeather.day.avgtemp_f}°F` }</span>
-                        <img src={dayWeather.day.condition.icon}></img>
-                        <span>{getShortWeekDay(dayWeather.date)}</span>
-                        <span>{getFormattedDate(dayWeather.date).today}</span>
-                      </Card>
-                    </SwiperSlide>
-                  })}
-                </Swiper>
-              </div>
-              <button className="arrow-left"><NavigateBeforeIcon /></button>
-              <button className="arrow-right"><NavigateNextIcon /></button>
+          <ForecastToggle
+            forecastUnit={forecastUnit}
+            setForecastUnit={setForecastUnit}
+          />
+          <div className="cards">
+            {forecastUnit == "DAILY" ? <ForecastCardsDaily forecastArray={apiResponse?.forecast?.forecastday} tempUnit={tempUnit} />
+             : <ForecastCardsHourly forecastArray={apiResponse?.forecast?.forecastday[0]?.hour} tempUnit={tempUnit} />}
+          </div>
+        </div>
+        <div className="sidebar">
+          <div className="location-wrapper">
+            <span className="location">
+              <img src={Frame} alt="" />
+              <span>{`${apiResponse?.location?.name}, ${apiResponse?.location?.country}`}</span>
+            </span>
+            <Paper onSubmit={handleSearchBarSubmit} className="search-bar" component="form" sx={searchBarStyles}>
+              <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Enter Location" value={inputValue} onChange={handleChange} onKeyDown={handleKeyPress}/>
+              <IconButton type="button" sx={{ p: "10px" }} onClick={handleSearchIconClick}><SearchIcon /></IconButton>
+            </Paper>
+          </div>
+          <div className="clock-labels">
+            <span className="sunrise-clock">Sunrise</span>
+            <span className="sunset-clock">Sunset</span>
+          </div>
+          {apiResponse && apiResponse?.location && (
+            <div className="clocks">
+              <StaticClock time={getCalculatedTime(apiResponse, "sunrise")} />
+              <DynamicClock time={localTime} setTime={setLocalTime} />
+              <StaticClock time={getCalculatedTime(apiResponse, "sunset")} />
+            </div>
+          )}
+          <div className="clock-values">
+            <span className="sunrise-value">{apiResponse?.forecast?.forecastday[0]?.astro?.sunrise}</span>
+            <span className="sunset-value">{apiResponse?.forecast?.forecastday[0]?.astro?.sunset}</span>
+          </div>
+          <Divider sx={dividerStyles} />
+          <div className="AQI-stats-wrapper">
+            <h1>AIR QUALITY INDEX</h1>
+            <div className="AQI-stats">
+              <span>
+                <span>CO</span>
+                <strong>{`${apiResponse?.current?.air_quality?.co}`}</strong>
+              </span>
+              <span>
+                <span>NO2</span>
+                <strong>{`${apiResponse?.current?.air_quality?.no2}`}</strong>
+              </span>
+              <span>
+                <span>O3</span>
+                <strong>{`${apiResponse?.current?.air_quality?.o3}`}</strong>
+              </span>
+              <span>
+                <span>UV</span>
+                <strong>{`${apiResponse?.current?.uv}`}</strong>
+              </span>
+            </div>
+            <div className="AQI-stats">
+              <span>
+                <span>PM2.5</span>
+                <strong>{`${apiResponse?.current?.air_quality?.pm2_5}`}</strong>
+              </span>
+              <span>
+                <span>PM10</span>
+                <strong>{`${apiResponse?.current?.air_quality?.pm10}`}</strong>
+              </span>
+              <span>
+                <span>SO2</span>
+                <strong>{`${apiResponse?.current?.air_quality?.so2}`}</strong>
+              </span>
             </div>
           </div>
         </div>
-        <div className='sidebar'>
-          <div className='location-wrapper'>
-            <span className='location'><img src={Frame} alt="" /><span>{`${apiResponse?.location?.name}, ${apiResponse?.location?.country}`}</span></span>
-            <Paper onSubmit={(event)=> { event?.preventDefault(); handleSearchIconClick();}} className='search-bar' component="form" sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', minWidth: 40 }}>
-              <InputBase sx={{ ml: 1, flex: 1 }} placeholder="Enter Location" value={inputValue} onChange={handleChange} onKeyDown={handleKeyPress}/>
-              <IconButton type="button" sx={{ p: '10px' }} onClick={handleSearchIconClick}><SearchIcon /></IconButton>
-            </Paper>
-          </div>
-          <div className='clock-labels'>
-            <span className='sunrise-clock'>Sunrise</span>
-            <span className='sunset-clock'>Sunset</span>
-          </div>
-          {apiResponse && apiResponse?.location && <div className="clocks">
-            <StaticClock time={getCalculatedTime(apiResponse, 'sunrise')} />
-            <DynamicClock time={localTime} setTime={setLocalTime} />
-            <StaticClock time={getCalculatedTime(apiResponse, 'sunset')} />
-          </div>}
-          <div className='clock-values'>
-            <span className='sunrise-value'>{apiResponse?.forecast?.forecastday[0]?.astro?.sunrise}</span>
-            <span className='sunset-value'>{apiResponse?.forecast?.forecastday[0]?.astro?.sunset}</span>
-          </div>
-          <Divider sx={{ marginTop: "73%", borderWidth: "1px", borderColor: "#FFFFFF", opacity: "0.5", borderRadius: "100px" }} />
-        </div>
       </div>
-    )
+    );
 }
 
 export default App

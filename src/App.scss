@@ -4,10 +4,51 @@
   .app-wrapper {
     display: grid;
     grid-template-columns: 60% 40%;
+    .AQI-stats-wrapper {
+      padding: 7%;
+      text-align: center;
+      div {
+        margin-left: 20%;
+        text-align: center;
+      }
+    }
+    .weather-stats, .AQI-stats {
+        display: flex;
+        gap: 25px;
+        margin-top: 32px;
+    
+        span {
+          img {
+            margin-right: 10px;
+            text-shadow: -1.398px 2.098px 0.699px rgba(0, 0, 0, 0.10);
+          }
+    
+          span {
+            margin-right: 10px;
+          }
+    
+          text-shadow: -1.398px 2.098px 0.699px rgba(0, 0, 0, 0.10);
+          display: flex;
+          align-items: center;
+        }
+    
+        span:last-child {
+          img {
+            filter: drop-shadow(-2.508px 2.262px 0.754px rgba(0, 0, 0, 0.20));
+          }
+        }
+      }
     .weather-report {
+      button.Mui-selected {
+        background-color: rgba(46, 141, 153, 1);
+        color: black;
+      }
       padding: 3rem;
       padding-bottom: 0;
       .temp-units {
+        button.Mui-selected {
+          background-color: rgba(237, 108, 2, 0.3);
+        }
         button:not(.Mui-selected) {
           color: black;
         }
@@ -48,28 +89,6 @@
         }
         .weekday-and-time {
           font-size: 1.5rem !important;
-        }
-      }
-      .weather-stats {
-        display: flex;
-        gap: 25px;
-        margin-top: 40px;
-        span {
-          img {
-            margin-right: 10px;
-            text-shadow: -1.398px 2.098px 0.699px rgba(0, 0, 0, 0.10);
-          }
-          span {
-            margin-right: 10px;
-          }
-          text-shadow: -1.398px 2.098px 0.699px rgba(0, 0, 0, 0.10);
-          display: flex;
-          align-items: center;
-        }
-        span:last-child {
-          img {
-            filter: drop-shadow(-2.508px 2.262px 0.754px rgba(0, 0, 0, 0.20));
-          }
         }
       }
       .cards {
